@@ -19,3 +19,6 @@ In this second pard, after installing Jupyter Notebook, we must write a Jupyter 
 - A plot for the number of reached/not-reached targets.
 
 Remember that, again, we reference to the [II° assignment of Research Track 1](https://github.com/NichAttGH/NichAtt_RT1_II_A.git)
+
+### Initialization
+We need to load jupyter cells so at the beginning we import everything we need
