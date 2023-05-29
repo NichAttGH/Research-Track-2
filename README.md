@@ -176,9 +176,9 @@ class PositionVisualizer:
         # Set the grid
         self.ax.grid(True, color='lightgrey')
         # Set the title
-        self.ax.set_title('Robot position')
+        self.ax.set_title('Robot position to the goal position')
         # Set the legend
-        self.ax.legend(loc='upper left')
+        self.ax.legend(loc='upper right')
         
         return self.ln, self.goal_ln
     
@@ -201,17 +201,17 @@ class GoalsVisualizer:
     def __init__(self):
         # Initialize the figure and axis
         self.fig, self.ax = plt.subplots()
-        self.ax.set_title('Goals reached/cancelled')
+        self.ax.set_title('Goals reached and canceled')
         
         # Set up the initial values for the two bars
-        self.reached = 0
-        self.cancelled = 0
+        self.count_goals_reached = 0
+        self.count_goals_canceled = 0
         
         # Set up the horizontal grid
         self.ax.grid(axis='y', color='grey', linestyle='-', alpha=0.5)
         
         # Set up the x-axis tick labels
-        self.labels = ('Reached', 'Cancelled')
+        self.labels = ('Goals Reached', 'Goals Canceled')
         self.x_pos = np.arange(len(self.labels))
         self.ax.set_xticks(self.x_pos)
         self.ax.set_xticklabels(self.labels)
@@ -221,18 +221,18 @@ class GoalsVisualizer:
         self.ax.set_yticks(np.arange(0, 11, 1))
         
         # Set up the bar chart
-        self.bar_colors = ['green', 'red']
+        self.bar_colors = ['red', 'blue']
         self.bar_plot = self.ax.bar(self.x_pos,
-                                    [self.reached, self.cancelled],
+                                    [self.count_goals_reached, self.count_goals_canceled],
                                     align='center',
                                     color=self.bar_colors,
                                     width=0.2)
         
     def goals_callback(self, message):
-        # Get the number of reached and cancelled goals
+        # Get the number of goals reached and canceled
         response = call_service()
-        self.reached = response.count_goals_reached
-        self.cancelled = response.count_goals_cancelled
+        self.count_goals_reached = response.count_goals_reached
+        self.count_goals_canceled = response.count_goals_canceled
         
     def update_plot(self, frame):
         # Update the values of the two bars
@@ -242,9 +242,9 @@ class GoalsVisualizer:
         # Update the heights of the bars
         for i, bar in enumerate(self.bar_plot):
             if i == 0:
-                bar.set_height(self.reached)
+                bar.set_height(self.count_goals_reached)
             else:
-                bar.set_height(self.cancelled)
+                bar.set_height(self.count_goals_canceled)
                 
             bar.set_color(self.bar_colors[i])
         
@@ -314,10 +314,10 @@ To see the plot of the _goals reached and canceled_, run this cell
 
 ```
 # Create the visualizer object
-g_vis = GoalsVisualizer()
+goals_visualizer = GoalsVisualizer()
 # Subscriber for the goals visualizer
-sub_result = rospy.Subscriber('/reaching_goal/result', assignment_2_2022.msg.PlanningActionResult, g_vis.goals_callback)
+sub_result = rospy.Subscriber('/reaching_goal/result', assignment_2_2022.msg.PlanningActionResult, goals_visualizer.goals_callback)
 
-g_ani = FuncAnimation(g_vis.fig, g_vis.update_plot, interval=1000, cache_frame_data = False)
+goals_visualizer_animation = FuncAnimation(goals_visualizer.fig, goals_visualizer.update_plot, interval=1000, cache_frame_data = False)
 plt.show(block=True)
 ```
