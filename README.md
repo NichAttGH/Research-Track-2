@@ -6,8 +6,13 @@ The assignment is divided in three parts:.
   - Some buttons for handling the motion of the robot in the environment;
   - A plot with the robot’s position and targets’ positions in the environment;
   - A text box with the distance of the closest obstacle (or the overall plot of the laserscanner);
-  - A plot for the number of reached/not-reached targets.
-
+  - A plot for the number of reached/not-reached targets
+* Write a report, about the [RT1 I assignment code](https://github.com/NichAttGH/NichAtt_RT1_I_A.git), composed of:
+  - Hypotheses made;
+  - Description and motivation of the experimental setup;
+  - Results;
+  - Discussion of the results with statistical analysis;
+  - Conclusion
 
 ## First Task
 
@@ -319,6 +324,7 @@ To see the plot of the _goals reached and canceled_, run this cell
 ```
 # Create the visualizer object
 goals_visualizer = GoalsVisualizer()
+
 # Subscriber for the goals visualizer
 sub_result = rospy.Subscriber('/reaching_goal/result', assignment_2_2022.msg.PlanningActionResult, goals_visualizer.goals_callback)
 
@@ -329,3 +335,7 @@ goals_visualizer_animation = FuncAnimation(
     cache_frame_data = False)
 plt.show(block = True)
 ```
+
+## Third Task
+The last one consists of performing a statistical analysis on the first assignment of Research Track 1, considering two different implementations (mine and a
+solution of one of my colleagues) and testing which one performs better, when silver and golden tokens are randomly placed in the environment.
