@@ -149,6 +149,7 @@ Now we have a function that we need to take values of counters of goals reached 
 
 ```
 def call_Node_B():
+    # Creation of the service client to send the request for goals reached and canceled
     rospy.wait_for_service('/Node_B')
     Node_B_serviceProxy = rospy.ServiceProxy('/Node_B', service_goals)
     response = Node_B_serviceProxy.service_goalsRequest()
@@ -158,14 +159,15 @@ def call_Node_B():
 At this point, we have 2 classes: one to plot the robot position with the goal position and the path of the robot, and another one to plot the values of the goals reached and canceled
 
 ```
+# Animation class used to plot the robot's position and goal's position
 class PositionVisualizer:
     def __init__(self):
         # Init function
         self.fig, self.ax = plt.subplots()
         # Settings for robot's position plot
-        self.ln, = plt.plot([], [], 'bo', label='Robot position')
+        self.ln, = plt.plot([], [], 'bo', label = 'Robot position')
         # Settings for target's position plot
-        self.goal_ln, = plt.plot([], [], 'r*', markersize=10, label='Goal position')
+        self.goal_ln, = plt.plot([], [], 'r*', markersize = 10, label = 'Goal position')
         # Robot's position data arrays
         self.x_data, self.y_data = [], []
     
@@ -174,11 +176,11 @@ class PositionVisualizer:
         self.ax.set_xlim(10, -10)
         self.ax.set_ylim(10, -10)
         # Set the grid
-        self.ax.grid(True, color='lightgrey')
+        self.ax.grid(True, color = 'lightgrey')
         # Set the title
         self.ax.set_title('Robot position to the goal position')
         # Set the legend
-        self.ax.legend(loc='upper right')
+        self.ax.legend(loc = 'upper right')
         
         return self.ln, self.goal_ln
     
@@ -191,12 +193,14 @@ class PositionVisualizer:
         # Update the robot position plot
         self.ln.set_data(self.x_data, self.y_data)
 
+        # With this, we can delete the goal marker into the plot
         if goal is not None:
             self.goal_ln.set_data(goal.target_pose.pose.position.x, goal.target_pose.pose.position.y)
         else:
             self.goal_ln.set_data([], [])
         return self.ln, self.goal_ln
         
+# Animation class used to plot the number of goals reached and canceled into a bar chart
 class GoalsVisualizer:
     def __init__(self):
         # Initialize the figure and axis
@@ -208,7 +212,7 @@ class GoalsVisualizer:
         self.count_goals_canceled = 0
         
         # Set up the horizontal grid
-        self.ax.grid(axis='y', color='grey', linestyle='-', alpha=0.5)
+        self.ax.grid(axis = 'y', color = 'grey', linestyle = '-', alpha = 0.5)
         
         # Set up the x-axis tick labels
         self.labels = ('Goals Reached', 'Goals Canceled')
@@ -224,9 +228,9 @@ class GoalsVisualizer:
         self.bar_colors = ['red', 'blue']
         self.bar_plot = self.ax.bar(self.x_pos,
                                     [self.count_goals_reached, self.count_goals_canceled],
-                                    align='center',
-                                    color=self.bar_colors,
-                                    width=0.2)
+                                    align = 'center',
+                                    color = self.bar_colors,
+                                    width = 0.2)
         
     def goals_callback(self, message):
         # Get the number of goals reached and canceled
@@ -236,8 +240,8 @@ class GoalsVisualizer:
         
     def update_plot(self, frame):
         # Update the values of the two bars
-        self.green_val = np.random.randint(0, 100)
         self.red_val = np.random.randint(0, 100)
+        self.blue_val = np.random.randint(0, 100)
         
         # Update the heights of the bars
         for i, bar in enumerate(self.bar_plot):
@@ -318,6 +322,10 @@ goals_visualizer = GoalsVisualizer()
 # Subscriber for the goals visualizer
 sub_result = rospy.Subscriber('/reaching_goal/result', assignment_2_2022.msg.PlanningActionResult, goals_visualizer.goals_callback)
 
-goals_visualizer_animation = FuncAnimation(goals_visualizer.fig, goals_visualizer.update_plot, interval=1000, cache_frame_data = False)
-plt.show(block=True)
+goals_visualizer_animation = FuncAnimation(
+    goals_visualizer.fig,
+    goals_visualizer.update_plot,
+    interval = 1000,
+    cache_frame_data = False)
+plt.show(block = True)
 ```
