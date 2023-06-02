@@ -1,6 +1,6 @@
 # Assignment Research Track2
 
-The assignment is divided in three parts:.
+The assignment is divided in three parts:
 * Creating a full documentation using Sphinx or Doxygen for the [RT1 II assignment code](https://github.com/NichAttGH/NichAtt_RT1_II_A.git).
 * Write a Jupyter file that represents these goals:
   - Some buttons for handling the motion of the robot in the environment;
@@ -339,3 +339,10 @@ plt.show(block = True)
 ## Third Task
 The last one consists of performing a statistical analysis on the first assignment of Research Track 1, considering two different implementations (mine and a
 solution of one of my colleagues) and testing which one performs better, when silver and golden tokens are randomly placed in the environment.
+
+Specifically, write a report composed of:
+* Hypotheses made (null hypothesis and alternative hypothesis)
+* Description and motivation of the experimental setup (types of experiments, number of repetitions)
+* Results
+* Discussion of the results with statistical analysis
+* Conclusion (is the hypothesis proven?)
