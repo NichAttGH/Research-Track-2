@@ -24,7 +24,7 @@ All the new documentation can be found in [this link](https://nichattgh.github.i
 After installing Jupyter Notebook, remember that we reference to the [II° assignment of Research Track 1](https://github.com/NichAttGH/NichAtt_RT1_II_A.git)
 
 ### Initialization
-We need to load jupyter cells so at the beginning we import everything we need
+We need to load jupyter cells so at the beginning we import everything we need and initialize the data
 
 ```
 # import ros and jupyter stuff
@@ -47,7 +47,16 @@ import numpy as np
 from sensor_msgs.msg import LaserScan
 from matplotlib.animation import FuncAnimation
 import math
+from IPython.display import display
 %matplotlib widget
+
+global count_goals_reached
+global count_goals_canceled
+
+# Initialization the data
+count_goals_reached = 0
+count_goals_canceled = 0
+categories = ['Goals Reached', 'Goals Canceled']
 ```
 
 Now we have the callback function *publish_msg* of the subscriber to create a custom message and to publish it on the topic */odom* with the difference that there is a little part that allow us to see every 100ms the position of the robot
@@ -131,37 +140,46 @@ layout = widgets.Layout(width = 'auto'))
 cancel_goal_button.on_click(on_cancel_goal_button_clicked)
 ```
 
-If we want to see the distance from the closest obstacle, we have this (again, here we have the same part as for the robot position but in this case to see the distance every 100ms)
+If we want to see the distance from the closest obstacle, we create a FloatText and declare a callback to show the distance from the closest obstacle
 
 ```
-def callback_laser_scan(laser_scan):
-    global last_time_published_laser
+# Create a widget to show the distance between the robot and the closest obstacle
+dist_closest_ob = widgets.FloatText(description = "Distance from the closest obstacle", disabled = True)
+
+# Function to compute the distance between the robot and the closest obstacle
+def callback_closest_obstacle(scan):
+    min = 50
+    for x in scan.ranges: 
+        if x > 0.1 and x < min:
+            min = x
+    dist_closest_ob.value = min 
     
-    # Only consider obstacles in a 180° field of view in front of the robot
-    index_start = len(laser_scan.ranges) // 2 - (len(laser_scan.ranges) // 4)
-    index_end = len(laser_scan.ranges) // 2 + (len(laser_scan.ranges) // 4)
-    ranges = laser_scan.ranges[index_start:index_end]
-    min_distance = round(min(ranges),1)
-    
-    # Print the distance every 100 ms
-    current_time = time.time() * 1000
-    if current_time - last_time_published_laser > 100:
-        print("\rDistance from the closest obstacle: {}".format(min_distance), end='')
-        last_time_published_laser = current_time
+display(dist_closest_ob)
 ```
 
-Now we have a function that we need to take values of counters of goals reached and canceled from the service /Nobe_B and these values will be used into the plot
+Now we have a function that we need to take values of counters of goals reached and canceled from the service Nobe_B and these values will be used into the plot
 
 ```
 def call_Node_B():
     # Creation of the service client to send the request for goals reached and canceled
-    rospy.wait_for_service('/Node_B')
-    Node_B_serviceProxy = rospy.ServiceProxy('/Node_B', service_goals)
-    response = Node_B_serviceProxy.service_goalsRequest()
+    rospy.wait_for_service('Node_B')
+    Node_B_serviceProxy = rospy.ServiceProxy('Node_B', service_goals)
+    response = Node_B_serviceProxy(service_goalsRequest())
     return response
 ```
 
-At this point, we have 2 classes: one to plot the robot position with the goal position and the path of the robot, and another one to plot the values of the goals reached and canceled
+Furthermore we have this callback to assign the values of the counter to other 2 variables used to plot the bar chart
+
+```
+def goals_callback(message):
+    global count_goals_reached, count_goals_canceled
+    # Get the number of goals reached and canceled
+    response = call_Node_B()
+    count_goals_reached = response.count_reached_goals
+    count_goals_canceled = response.count_canceled_goals
+```
+
+At this point, we have a class that plots the robot position with the goal position and the path of the robot
 
 ```
 # Animation class used to plot the robot's position and goal's position
@@ -204,70 +222,19 @@ class PositionVisualizer:
         else:
             self.goal_ln.set_data([], [])
         return self.ln, self.goal_ln
-        
-# Animation class used to plot the number of goals reached and canceled into a bar chart
-class GoalsVisualizer:
-    def __init__(self):
-        # Initialize the figure and axis
-        self.fig, self.ax = plt.subplots()
-        self.ax.set_title('Goals reached and canceled')
-        
-        # Set up the initial values for the two bars
-        self.count_goals_reached = 0
-        self.count_goals_canceled = 0
-        
-        # Set up the horizontal grid
-        self.ax.grid(axis = 'y', color = 'grey', linestyle = '-', alpha = 0.5)
-        
-        # Set up the x-axis tick labels
-        self.labels = ('Goals Reached', 'Goals Canceled')
-        self.x_pos = np.arange(len(self.labels))
-        self.ax.set_xticks(self.x_pos)
-        self.ax.set_xticklabels(self.labels)
-        
-        # Set up the y-axis range and ticks
-        self.ax.set_ylim([0, 10])
-        self.ax.set_yticks(np.arange(0, 11, 1))
-        
-        # Set up the bar chart
-        self.bar_colors = ['red', 'blue']
-        self.bar_plot = self.ax.bar(self.x_pos,
-                                    [self.count_goals_reached, self.count_goals_canceled],
-                                    align = 'center',
-                                    color = self.bar_colors,
-                                    width = 0.2)
-        
-    def goals_callback(self, message):
-        # Get the number of goals reached and canceled
-        response = call_service()
-        self.count_goals_reached = response.count_goals_reached
-        self.count_goals_canceled = response.count_goals_canceled
-        
-    def update_plot(self, frame):
-        # Update the values of the two bars
-        self.red_val = np.random.randint(0, 100)
-        self.blue_val = np.random.randint(0, 100)
-        
-        # Update the heights of the bars
-        for i, bar in enumerate(self.bar_plot):
-            if i == 0:
-                bar.set_height(self.count_goals_reached)
-            else:
-                bar.set_height(self.count_goals_canceled)
-                
-            bar.set_color(self.bar_colors[i])
-        
-        return self.bar_plot
 ```
 
 The last part is to inizialize the node and other entities like publisher, action client etc..
 
 ```
-# Creation of the node A
+# Creation of the Interface
 rospy.init_node('Jupyter')
 
-# Creation of the Publisher
+# Creation of the publisher
 publisher = rospy.Publisher('/position_and_velocity', custom_msg, queue_size = 1)
+
+# Creation of the subscriber for results
+sub_result = rospy.Subscriber('/reaching_goal/result', assignment_2_2022.msg.PlanningActionResult, goals_callback)
     
 # Creation of the action client
 act_client = actionlib.SimpleActionClient('/reaching_goal', assignment_2_2022.msg.PlanningAction)
@@ -290,8 +257,7 @@ jr.subscribe('/odom', Odometry, publish_msg)
 To see the _distance from the closest obstacle_, run this cell
 
 ```
-last_time_published_laser = 0
-jr.subscribe('/scan', LaserScan, callback_laser_scan)
+jr.subscribe('/scan', LaserScan, callback_closest_obstacle)
 ```
 
 To see the _interface_, run this cell
@@ -319,21 +285,33 @@ position_animation = FuncAnimation(
 plt.show(block = True)
 ```
 
-To see the plot of the _goals reached and canceled_, run this cell
+To see the plot of the _goals reached and canceled_, run this cell where we initialize the bar chart and with _update chart_ function we update the bar chart every time we click on the update button
 
 ```
-# Create the visualizer object
-goals_visualizer = GoalsVisualizer()
+# Create the initial bar chart
+fig, ax = plt.subplots()
+bar_chart = ax.bar(categories, [count_goals_reached, count_goals_canceled])
+ax.set_ylabel('Values')
+ax.set_xlabel('Goals')
+ax.set_title('Goals reached and canceled')
+ax.set_ylim([0, 10])
 
-# Subscriber for the goals visualizer
-sub_result = rospy.Subscriber('/reaching_goal/result', assignment_2_2022.msg.PlanningActionResult, goals_visualizer.goals_callback)
+# Define the update function
+def update_chart(b):
+    # Update the bar chart with new values
+    bar_chart[0].set_height(count_goals_reached)
+    bar_chart[1].set_height(count_goals_canceled)
+    fig.canvas.draw()
 
-goals_visualizer_animation = FuncAnimation(
-    goals_visualizer.fig,
-    goals_visualizer.update_plot,
-    interval = 1000,
-    cache_frame_data = False)
-plt.show(block = True)
+# Create the update button
+update_button = widgets.Button(description='Update Chart')
+update_button.on_click(update_chart)
+
+# Display the button
+display(update_button)
+
+# Show the chart
+plt.show()
 ```
 
 ## Third Task
