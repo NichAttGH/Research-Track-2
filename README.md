@@ -1,4 +1,4 @@
-# Assignment Research Track2
+# Research Track 2
 
 The assignment is divided in three parts:
 * Creating a full documentation using Sphinx or Doxygen for the [RT1 II assignment code](https://github.com/NichAttGH/NichAtt_RT1_II_A.git).
