@@ -1,7 +1,7 @@
 # Research Track 2
 
 The assignment is divided in three parts:
-* Creating a full documentation using Sphinx or Doxygen for the [RT1 II assignment code](https://github.com/NichAttGH/NichAtt_RT1_II_A.git).
+* Creating a full documentation using Sphinx or Doxygen for the [RT1 II assignment code](https://github.com/NichAttGH/Research-Track-1).
 * Write a Jupyter file that represents these goals:
   - Some buttons for handling the motion of the robot in the environment;
   - A plot with the robot’s position and targets’ positions in the environment;
