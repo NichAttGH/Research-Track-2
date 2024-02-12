@@ -16,8 +16,7 @@ The assignment is divided in three parts:
 
 ## First Task
 
-In this part of the work, after installing Sphinx and ReadTheDocs theme, I just commented the codes of the RT1_II_A, and the page with all the documentation was created.  
-All the new documentation can be found in [this link](https://nichattgh.github.io/NichAtt_RT2_I_A).
+In this part of the work, after installing Sphinx and ReadTheDocs theme, I just commented the codes of the Research Track 1 II Assignment, and the page with all the documentation was created.
 
 ## Second Task
 
